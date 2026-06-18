@@ -132,7 +132,6 @@ param(
     [switch]$Resume
 )
 
-Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 # ── INIT ──────────────────────────────────────────────────────────────────────
@@ -183,10 +182,10 @@ function Save-Checkpoint {
     param([string]$SourceId, [string]$DeltaToken = "")
     $data      = Read-CheckpointFile
     $completed = @($data.completed) + $SourceId | Select-Object -Unique
-    # Aggiorna o aggiungi il delta token
     $tokens = @{}
     foreach ($p in $data.deltaTokens.PSObject.Properties) { $tokens[$p.Name] = $p.Value }
     if ($DeltaToken) { $tokens[$SourceId] = $DeltaToken }
+    if (-not (Test-Path $OutputPath)) { New-Item -ItemType Directory -Path $OutputPath -Force | Out-Null }
     @{ completed = $completed; deltaTokens = $tokens } |
         ConvertTo-Json -Depth 3 |
         Set-Content -Path $checkpointFile -Encoding UTF8
@@ -252,9 +251,9 @@ function Invoke-GraphPaged {
     $deltaToken = $null
     do {
         $r = Invoke-GraphRequest -Uri $nextLink
-        if ($r.value) { foreach ($i in $r.value) { $all.Add($i) } }
-        if ($r.'@odata.deltaLink') { $deltaToken = $r.'@odata.deltaLink' }
-        $nextLink = $r.'@odata.nextLink'
+        if ($r.value)                  { foreach ($i in $r.value) { $all.Add($i) } }
+        if ($r.'@odata.deltaLink')     { $deltaToken = $r.'@odata.deltaLink' }
+        $nextLink = $r.'@odata.nextLink'  # $null se ultima pagina — il do/while si ferma
     } while ($nextLink)
     return [PSCustomObject]@{ Items = $all; DeltaLink = $deltaToken }
 }
@@ -288,8 +287,8 @@ function Test-MessageMatch {
     # Escludi bot/applicazioni
     if ($NoBots -and $msg.from.application) { return $false }
 
-    # Solo messaggi con allegati
-    if ($OnlyWithAttachments -and (-not $msg.attachments -or $msg.attachments.Count -eq 0)) { return $false }
+    # Solo messaggi con allegati (@() forza array anche su singolo oggetto JSON)
+    if ($OnlyWithAttachments -and @($msg.attachments).Count -eq 0) { return $false }
 
     # Solo messaggi modificati dopo l'invio
     if ($OnlyEdited -and $msg.lastModifiedDateTime -eq $msg.createdDateTime) { return $false }
@@ -316,11 +315,12 @@ function Test-MessageMatch {
     if ($StartDate -and $d -lt $StartDate)                                  { return $false }
     if ($EndDate   -and $d -gt $EndDate.Date.AddDays(1).AddSeconds(-1))    { return $false }
 
-    # Filtro mittenti (OR tra gli utenti in lista)
+    # Filtro mittenti (OR): accetta UPN, Object ID o displayName
     if ($userList.Count -gt 0) {
-        $upn = if ($msg.from.user) { $msg.from.user.userPrincipalName } else { "" }
-        $id  = if ($msg.from.user) { $msg.from.user.id }               else { "" }
-        if (-not ($userList | Where-Object { $_ -eq $upn -or $_ -eq $id })) { return $false }
+        $uId  = if ($msg.from.user) { $msg.from.user.id          } else { "" }
+        $uUpn = if ($msg.from.user) { $msg.from.user.userPrincipalName } else { "" }
+        $uDn  = if ($msg.from.user) { $msg.from.user.displayName } else { "" }
+        if (-not ($userList | Where-Object { $_ -eq $uId -or $_ -eq $uUpn -or $_ -eq $uDn })) { return $false }
     }
 
     # Filtro keyword
@@ -365,14 +365,14 @@ function Add-Highlights {
 function ConvertTo-Record {
     param($msg, [string]$Source, [bool]$IsReply, [string]$ParentId)
     $mittente = if ($msg.from.user) { $msg.from.user.displayName } else { "(sistema)" }
-    $upn      = if ($msg.from.user) { $msg.from.user.userPrincipalName } else { "" }
+    $userId   = if ($msg.from.user) { $msg.from.user.id } else { "" }
     $allegati = if ($msg.attachments) {
         ($msg.attachments | Where-Object { $_.name } | ForEach-Object { $_.name }) -join "; "
     } else { "" }
     [PSCustomObject]@{
         Data        = $msg.createdDateTime
         Mittente    = $mittente
-        UPN         = $upn
+        UserId      = $userId
         Testo       = Add-Highlights (Remove-HtmlTags $msg.body.content)
         IsRisposta  = $IsReply
         ParentId    = $ParentId
@@ -464,7 +464,7 @@ function Get-Stats {
     $stats = [System.Collections.Generic.List[PSCustomObject]]::new()
 
     # Per utente
-    $Records | Group-Object UPN | Sort-Object Count -Descending | ForEach-Object {
+    $Records | Group-Object Mittente | Sort-Object Count -Descending | ForEach-Object {
         $stats.Add([PSCustomObject]@{
             StatType = "PerUtente"
             Chiave   = $_.Name
@@ -538,11 +538,12 @@ if ($OnlyWithAttachments) { Write-Host "  Allegati  : solo messaggi con allegati
 if ($Resume)              { Write-Host "  Resume    : si' (checkpoint attivo)" -ForegroundColor DarkYellow }
 Write-Host ""
 
-$records = @(switch ($Mode) {
+$raw = switch ($Mode) {
     "Chat"      { Export-Chat }
     "Channel"   { Export-Channel }
     "UserChats" { Export-UserChats }
-} | Where-Object { $_ })
+}
+$records = @($raw | Where-Object { $_ })
 
 if ($records.Count -eq 0) {
     Write-Warning "Nessun messaggio trovato con i filtri specificati."
