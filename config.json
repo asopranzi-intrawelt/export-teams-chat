@@ -1,0 +1,5 @@
+{
+    "TenantId":     "INSERISCI_TENANT_ID",
+    "ClientId":     "INSERISCI_CLIENT_ID",
+    "ClientSecret": "INSERISCI_CLIENT_SECRET"
+}
