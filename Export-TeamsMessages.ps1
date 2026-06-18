@@ -140,6 +140,8 @@ $scriptRoot = $PSScriptRoot
 $configPath = Join-Path $scriptRoot "config.json"
 if ($OutputPath -eq "") { $OutputPath = Join-Path $scriptRoot "output" }
 
+$configLocalPath = Join-Path $scriptRoot "config.local.json"
+if (Test-Path $configLocalPath) { $configPath = $configLocalPath }
 if (-not (Test-Path $configPath)) {
     Write-Error "config.json non trovato in: $scriptRoot"; exit 1
 }

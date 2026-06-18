@@ -26,8 +26,10 @@ param(
     [string]$UserId
 )
 
-$scriptRoot   = $PSScriptRoot
-$configPath   = Join-Path $scriptRoot "config.json"
+$scriptRoot      = $PSScriptRoot
+$configPath      = Join-Path $scriptRoot "config.json"
+$configLocalPath = Join-Path $scriptRoot "config.local.json"
+if (Test-Path $configLocalPath) { $configPath = $configLocalPath }
 $config       = Get-Content $configPath -Raw | ConvertFrom-Json
 $TenantId     = $config.TenantId
 $ClientId     = $config.ClientId

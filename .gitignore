@@ -1,0 +1,16 @@
+# Configurazione con valori reali (mai committare)
+config.local.json
+
+# Output degli export
+output/
+
+# Stato runtime
+checkpoint.json
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# Editor
+.vscode/
+*.bak
