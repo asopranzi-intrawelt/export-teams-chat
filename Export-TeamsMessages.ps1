@@ -126,6 +126,7 @@ param(
     [string]$Importance = "",
 
     # Output
+    [switch]$DownloadMedia,
     [ValidateSet("CSV","JSON")]
     [string]$OutputFormat = "CSV",
     [string]$OutputPath = "",
@@ -230,11 +231,13 @@ function Invoke-GraphRequest {
             $headers = @{ Authorization = "Bearer $(Get-GraphToken)" }
             return Invoke-RestMethod -Uri $Uri -Headers $headers -Method GET
         } catch {
-            $status = $_.Exception.Response.StatusCode.value__
+            $status = 0
+            try { $status = $_.Exception.Response.StatusCode.value__ } catch {}
             if ($status -in @(429, 503) -and $attempt -lt $maxRetries) {
-                # Rispetta Retry-After se presente, altrimenti backoff esponenziale
-                $retryAfter = $_.Exception.Response.Headers["Retry-After"]
-                $wait = if ($retryAfter) { [int]$retryAfter } else { [math]::Pow(2, $attempt) }
+                $retryAfter = 0
+                try { $retryAfter = [int]($_.Exception.Response.Headers["Retry-After"]) } catch {}
+                # backoff esponenziale con minimo crescente: 10s, 20s, 40s, 80s
+                $wait = [math]::Max($retryAfter, [int][math]::Pow(2, $attempt) * 5)
                 Write-Warning "  Throttling ($status). Attendo ${wait}s (tentativo $attempt/$maxRetries)..."
                 Start-Sleep -Seconds $wait
             } else {
@@ -312,8 +315,14 @@ function Test-MessageMatch {
 
     # Filtro data
     $d = [datetime]$msg.createdDateTime
-    if ($StartDate -and $d -lt $StartDate)                                  { return $false }
-    if ($EndDate   -and $d -gt $EndDate.Date.AddDays(1).AddSeconds(-1))    { return $false }
+    if ($StartDate -and $d -lt $StartDate) { return $false }
+    if ($EndDate) {
+        # se EndDate ha solo la data (ora = 00:00:00), estende a fine giornata
+        $endBound = if ($EndDate.TimeOfDay.TotalSeconds -eq 0) {
+            $EndDate.Date.AddDays(1).AddSeconds(-1)
+        } else { $EndDate }
+        if ($d -gt $endBound) { return $false }
+    }
 
     # Filtro mittenti (OR): accetta UPN, Object ID o displayName
     if ($userList.Count -gt 0) {
@@ -344,6 +353,43 @@ function Test-MessageMatch {
     return $true
 }
 
+# ── DOWNLOAD MEDIA INLINE (hostedContents) ───────────────────────────────────
+function Get-MediaLinks {
+    param([string]$Html, [string]$MessageId)
+    if (-not $DownloadMedia -or [string]::IsNullOrEmpty($Html)) { return "" }
+
+    $mediaDir = Join-Path $OutputPath "media"
+    if (-not (Test-Path $mediaDir)) { New-Item -ItemType Directory -Path $mediaDir -Force | Out-Null }
+
+    $found = [regex]::Matches($Html, 'src="(https://[^"]+/hostedContents/[^"]+/\$value)"')
+    if ($found.Count -eq 0) { return "" }
+
+    $saved = [System.Collections.Generic.List[string]]::new()
+    $i = 0
+    foreach ($m in $found) {
+        $url = $m.Groups[1].Value
+        try {
+            $headers = @{ Authorization = "Bearer $(Get-GraphToken)" }
+            $resp    = Invoke-WebRequest -Uri $url -Headers $headers -Method GET -UseBasicParsing
+            $ct      = if ($resp.Headers["Content-Type"] -is [array]) { $resp.Headers["Content-Type"][0] } else { $resp.Headers["Content-Type"] }
+            $ext     = switch -Wildcard ($ct) {
+                "image/jpeg*" { "jpg" }
+                "image/png*"  { "png" }
+                "image/gif*"  { "gif" }
+                "image/webp*" { "webp" }
+                default       { "bin" }
+            }
+            $filename = "${MessageId}_${i}.${ext}"
+            [System.IO.File]::WriteAllBytes((Join-Path $mediaDir $filename), $resp.Content)
+            $saved.Add($filename)
+            $i++
+        } catch {
+            Write-Warning "  Media non scaricato ($url): $_"
+        }
+    }
+    return $saved -join "; "
+}
+
 # ── KEYWORD HIGHLIGHT ─────────────────────────────────────────────────────────
 function Add-Highlights {
     param([string]$Text)
@@ -366,19 +412,25 @@ function ConvertTo-Record {
     param($msg, [string]$Source, [bool]$IsReply, [string]$ParentId)
     $mittente = if ($msg.from.user) { $msg.from.user.displayName } else { "(sistema)" }
     $userId   = if ($msg.from.user) { $msg.from.user.id } else { "" }
-    $allegati = if ($msg.attachments) {
-        ($msg.attachments | Where-Object { $_.name } | ForEach-Object { $_.name }) -join "; "
+    $allegati    = if ($msg.attachments) {
+        ($msg.attachments | Where-Object { $_.name }       | ForEach-Object { $_.name })       -join "; "
     } else { "" }
+    $attUrls     = if ($msg.attachments) {
+        ($msg.attachments | Where-Object { $_.contentUrl } | ForEach-Object { $_.contentUrl }) -join "; "
+    } else { "" }
+    $mediaFiles  = Get-MediaLinks -Html $msg.body.content -MessageId $msg.id
     [PSCustomObject]@{
-        Data        = $msg.createdDateTime
-        Mittente    = $mittente
-        UserId      = $userId
-        Testo       = Add-Highlights (Remove-HtmlTags $msg.body.content)
-        IsRisposta  = $IsReply
-        ParentId    = $ParentId
-        MessageId   = $msg.id
-        Source      = $Source
-        Allegati    = $allegati
+        Data           = $msg.createdDateTime
+        Mittente       = $mittente
+        UserId         = $userId
+        Testo          = Add-Highlights (Remove-HtmlTags $msg.body.content)
+        IsRisposta     = $IsReply
+        ParentId       = $ParentId
+        MessageId      = $msg.id
+        Source         = $Source
+        Allegati       = $allegati
+        AttachmentUrls = $attUrls
+        MediaFiles     = $mediaFiles
     }
 }
 
@@ -407,7 +459,14 @@ function Get-MessagesWithReplies {
             $out.Add((ConvertTo-Record -msg $msg -Source $Source -IsReply $false -ParentId ""))
         }
         $rUri    = $ReplUriTpl -replace '\{id\}', $msg.id
-        $replies = (Invoke-GraphPaged -Uri $rUri).Items
+        $replies = @()
+        try {
+            $replies = (Invoke-GraphPaged -Uri $rUri).Items
+        } catch {
+            $sc = 0; try { $sc = $_.Exception.Response.StatusCode.value__ } catch {}
+            if ($sc -ne 404) { throw }
+            # 404 = replies non supportate per questo tipo di messaggio (es. chat 1:1)
+        }
         foreach ($reply in $replies) {
             if (Test-MessageMatch -msg $reply) {
                 $out.Add((ConvertTo-Record -msg $reply -Source $Source -IsReply $true -ParentId $msg.id))

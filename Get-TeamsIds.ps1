@@ -76,6 +76,27 @@ switch ($What) {
         if (-not $UserId) { Write-Error "Specificare -UserId"; exit 1 }
         Write-Host "`n=== CHAT DI $UserId ===" -ForegroundColor Yellow
         $chats = Invoke-Graph -Uri "https://graph.microsoft.com/v1.0/users/$UserId/chats?`$top=50" -Token $token
-        $chats | Select-Object @{N="Tipo";E={$_.chatType}}, @{N="Tema";E={$_.topic}}, @{N="ChatId";E={$_.id}} | Format-Table -AutoSize
+        $rows  = foreach ($chat in $chats) {
+            $partecipanti = ""
+            if ($chat.chatType -eq "oneOnOne") {
+                try {
+                    $members = Invoke-Graph -Uri "https://graph.microsoft.com/v1.0/chats/$($chat.id)/members" -Token $token
+                    $altri   = $members | Where-Object { $_.userId -ne $null } | ForEach-Object { $_.displayName }
+                    $partecipanti = $altri -join ", "
+                } catch { $partecipanti = "(errore)" }
+            } elseif ($chat.topic) {
+                $partecipanti = $chat.topic
+            }
+            [PSCustomObject]@{
+                Tipo          = $chat.chatType
+                Partecipanti  = $partecipanti
+                ChatId        = $chat.id
+            }
+        }
+        foreach ($row in $rows) {
+            Write-Host "[$($row.Tipo)] $($row.Partecipanti)" -ForegroundColor Cyan
+            Write-Host "  $($row.ChatId)"
+            Write-Host ""
+        }
     }
 }
