@@ -12,8 +12,12 @@
     .\Get-TeamsIds.ps1 -What Channels -TeamId "aaaa-bbbb-..."
 
 .EXAMPLE
-    # Lista chat di un utente
+    # Lista chat di un utente (con partecipanti per le chat 1:1)
     .\Get-TeamsIds.ps1 -What Chats -UserId "mario.rossi@intrawelt.com"
+
+.EXAMPLE
+    # Lista chat veloce senza fetch dei partecipanti (utile su account con molte chat)
+    .\Get-TeamsIds.ps1 -What Chats -UserId "mario.rossi@intrawelt.com" -Quick
 #>
 
 [CmdletBinding()]
@@ -23,7 +27,8 @@ param(
     [string]$What,
 
     [string]$TeamId,
-    [string]$UserId
+    [string]$UserId,
+    [switch]$Quick   # per -What Chats: salta il fetch dei membri (più veloce su account con molte chat)
 )
 
 $scriptRoot      = $PSScriptRoot
@@ -78,7 +83,7 @@ switch ($What) {
         $chats = Invoke-Graph -Uri "https://graph.microsoft.com/v1.0/users/$UserId/chats?`$top=50" -Token $token
         $rows  = foreach ($chat in $chats) {
             $partecipanti = ""
-            if ($chat.chatType -eq "oneOnOne") {
+            if ($chat.chatType -eq "oneOnOne" -and -not $Quick) {
                 try {
                     $members = Invoke-Graph -Uri "https://graph.microsoft.com/v1.0/chats/$($chat.id)/members" -Token $token
                     $altri   = $members | Where-Object { $_.userId -ne $null } | ForEach-Object { $_.displayName }

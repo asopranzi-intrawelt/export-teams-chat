@@ -203,6 +203,7 @@ $keywordList = if ($Keywords) { @($Keywords -split "," | ForEach-Object { $_.Tri
 # ── TOKEN (con auto-refresh) ──────────────────────────────────────────────────
 $script:CachedToken  = $null
 $script:TokenExpires = [datetime]::MinValue
+$script:userCache    = @{}
 
 function Get-GraphToken {
     if ($script:CachedToken -and [datetime]::UtcNow -lt $script:TokenExpires) {
@@ -257,6 +258,7 @@ function Invoke-GraphPaged {
         if ($r.value)                  { foreach ($i in $r.value) { $all.Add($i) } }
         if ($r.'@odata.deltaLink')     { $deltaToken = $r.'@odata.deltaLink' }
         $nextLink = $r.'@odata.nextLink'  # $null se ultima pagina — il do/while si ferma
+        if ($nextLink) { Start-Sleep -Milliseconds 300 }
     } while ($nextLink)
     return [PSCustomObject]@{ Items = $all; DeltaLink = $deltaToken }
 }
@@ -353,6 +355,22 @@ function Test-MessageMatch {
     return $true
 }
 
+# ── RISOLUZIONE UPN UTENTE (con cache per evitare chiamate duplicate) ─────────
+function Resolve-UserId {
+    param([string]$ObjectId)
+    if ([string]::IsNullOrEmpty($ObjectId)) { return "" }
+    if ($script:userCache.ContainsKey($ObjectId)) { return $script:userCache[$ObjectId] }
+    try {
+        $r   = Invoke-GraphRequest -Uri "https://graph.microsoft.com/v1.0/users/$ObjectId`?`$select=userPrincipalName,displayName"
+        $upn = if ($r.userPrincipalName) { $r.userPrincipalName } else { $ObjectId }
+        $script:userCache[$ObjectId] = $upn
+        return $upn
+    } catch {
+        $script:userCache[$ObjectId] = $ObjectId
+        return $ObjectId
+    }
+}
+
 # ── DOWNLOAD MEDIA INLINE (hostedContents) ───────────────────────────────────
 function Get-MediaLinks {
     param([string]$Html, [string]$MessageId)
@@ -361,6 +379,7 @@ function Get-MediaLinks {
     $mediaDir = Join-Path $OutputPath "media"
     if (-not (Test-Path $mediaDir)) { New-Item -ItemType Directory -Path $mediaDir -Force | Out-Null }
 
+    Write-Verbose "  [MediaDebug] HTML del messaggio $MessageId: $($Html.Substring(0, [Math]::Min(300, $Html.Length)))"
     $found = [regex]::Matches($Html, 'src="(https://[^"]+/hostedContents/[^"]+/\$value)"')
     if ($found.Count -eq 0) { return "" }
 
@@ -411,7 +430,8 @@ function Add-Highlights {
 function ConvertTo-Record {
     param($msg, [string]$Source, [bool]$IsReply, [string]$ParentId)
     $mittente = if ($msg.from.user) { $msg.from.user.displayName } else { "(sistema)" }
-    $userId   = if ($msg.from.user) { $msg.from.user.id } else { "" }
+    $objectId = if ($msg.from.user) { $msg.from.user.id } else { "" }
+    $upn      = Resolve-UserId -ObjectId $objectId
     $allegati    = if ($msg.attachments) {
         ($msg.attachments | Where-Object { $_.name }       | ForEach-Object { $_.name })       -join "; "
     } else { "" }
@@ -422,7 +442,7 @@ function ConvertTo-Record {
     [PSCustomObject]@{
         Data           = $msg.createdDateTime
         Mittente       = $mittente
-        UserId         = $userId
+        UPN            = $upn
         Testo          = Add-Highlights (Remove-HtmlTags $msg.body.content)
         IsRisposta     = $IsReply
         ParentId       = $ParentId

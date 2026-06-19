@@ -54,7 +54,7 @@ SVILUPPO.md                 log completo di test, bug e note tecniche
 
 Queste sono le modifiche concrete da applicare al codice. Ognuna è indipendente dalle altre salvo dove indicato.
 
-### 1. Validare il download media su messaggi con immagini reali
+### 1. Validare il download media su messaggi con immagini reali  *(da testare)*
 
 Il flag `-DownloadMedia` è implementato in `Get-MediaLinks` (cerca la funzione in `Export-TeamsMessages.ps1`).
 Usa regex `src="(https://[^"]+/hostedContents/[^"]+/\$value)"` sul body HTML del messaggio.
@@ -64,7 +64,7 @@ Verificare che:
 - il file venga salvato in `output/media/` con estensione corretta
 - la chiamata `Invoke-WebRequest` con il token Graph funzioni sul binary content
 
-### 2. Throttling troppo aggressivo sulle chat con molti messaggi
+### 2. ~~Throttling troppo aggressivo sulle chat con molti messaggi~~  *(FATTO)*
 
 La chat Alessio-Tommaso ha 3271 messaggi. Durante il fetch vengono fatti 65+ chiamate paginate (50 msg/pagina).
 Su ogni pagina si riceve 429 e si attende 10s. Totale: ~10-11 minuti solo per la paginazione.
@@ -72,7 +72,7 @@ Soluzione da valutare: aggiungere un `Start-Sleep -Milliseconds 300` tra una pag
 per evitare il throttling preventivamente invece di reagirvi. Testare che non rallenti troppo i casi piccoli.
 La funzione da modificare è `Invoke-GraphPaged` in `Export-TeamsMessages.ps1`.
 
-### 3. Get-TeamsIds -What Chats è lento su account con molte chat
+### 3. ~~Get-TeamsIds -What Chats è lento su account con molte chat~~  *(FATTO — aggiunto -Quick)*
 
 Per ogni chat 1:1 viene fatto un API call separato a `/chats/{id}/members`.
 Con 150+ chat (caso Alessio) questo genera 50+ chiamate aggiuntive e può anch'esso incontrare throttling.
@@ -80,7 +80,7 @@ Soluzione: aggiungere un parametro `-Quick` che salta il fetch dei membri e most
 oppure fare il fetch membri solo se l'utente passa `-ShowMembers`.
 Il codice da modificare è nel blocco `"Chats"` di `Get-TeamsIds.ps1`.
 
-### 4. Campo MediaFiles rimane vuoto anche quando ci sono allegati immagine
+### 4. Campo MediaFiles rimane vuoto anche quando ci sono allegati immagine  *(debug aggiunto — usare -Verbose per loggare HTML raw)*
 
 Da verificare: quando un utente incolla un'immagine in Teams (non la allega come file),
 il body HTML del messaggio contiene un tag `<img src="...hostedContents...">`.
@@ -89,7 +89,7 @@ Se il campo `MediaFiles` è vuoto dopo un export con `-DownloadMedia`, potrebbe 
 - il pattern regex non matcha la variante di URL usata da quel tenant
 Loggare il raw HTML del primo messaggio per confrontare il formato attuale dell'URL.
 
-### 5. Il campo UserId nel CSV non è human-readable
+### 5. ~~Il campo UserId nel CSV non è human-readable~~  *(FATTO — Resolve-UserId con cache, campo rinominato UPN)*
 
 Attualmente `UserId` contiene l'Object ID di Azure AD (es. `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`).
 Sarebbe più utile mostrare la UPN (email) che però non è inclusa nel payload `chatMessage.from.user`.

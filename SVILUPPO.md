@@ -61,6 +61,15 @@ Branch principale: main
 | 404 su /replies in chat 1:1 | endpoint replies non supportato per chat private | catch 404 silenzioso nel fetch risposte |
 | ChatId troncato in Get-TeamsIds -What Chats | Format-Table taglia valori lunghi | Output con Write-Host su riga separata per ogni chat |
 
+## Patch applicate (sessione 2026-06-19)
+
+| Patch | Descrizione |
+|---|---|
+| #2 | Throttling preventivo: Start-Sleep 300ms tra pagine in Invoke-GraphPaged |
+| #3 | Get-TeamsIds -What Chats -Quick: salta fetch membri per velocità |
+| #4 | Get-MediaLinks: Write-Verbose del raw HTML (primi 300 char) per debug URL hostedContents |
+| #5 | Resolve-UserId con cache $script:userCache; campo UserId rinominato in UPN |
+
 ## Funzionalita implementate
 
 - [x] Export da Chat privata (Mode=Chat)
@@ -83,6 +92,9 @@ Branch principale: main
 - [x] Output CSV e JSON
 - [x] AttachmentUrls nel record (URL allegati file)
 - [x] DownloadMedia: scarica immagini inline (hostedContents) in output/media/
+- [x] Throttling preventivo 300ms tra pagine (riduce 429 su chat grandi)
+- [x] Get-TeamsIds -Quick: skip fetch membri per Chats
+- [x] UPN risolto via GET /users/{id} con cache (campo UPN nel CSV)
 
 ## Comandi utili
 

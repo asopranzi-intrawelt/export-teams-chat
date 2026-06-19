@@ -58,6 +58,9 @@ Recupera gli ID necessari per l'export.
 
 # Lista chat di un utente (mostra partecipanti per chat 1:1)
 .\Get-TeamsIds.ps1 -What Chats -UserId "utente@dominio.com"
+
+# Lista veloce senza fetch partecipanti (utile su account con molte chat)
+.\Get-TeamsIds.ps1 -What Chats -UserId "utente@dominio.com" -Quick
 ```
 
 ### Export-TeamsMessages.ps1
@@ -111,6 +114,12 @@ Recupera gli ID necessari per l'export.
 | `-OutputFormat` | `CSV` (default), `JSON` |
 | `-Resume` | Riprende dal checkpoint, usa delta token per export incrementale |
 
+## Get-TeamsIds parametri aggiuntivi
+
+| Parametro | Descrizione |
+|---|---|
+| `-Quick` | (solo `-What Chats`) Salta il fetch dei partecipanti, mostra solo tipo e ChatId. Utile su account con molte chat dove il fetch per ognuna genera throttling. |
+
 ## Logica filtri
 
 I filtri di tipo diverso si combinano in AND. All'interno dello stesso tipo:
@@ -132,8 +141,9 @@ Il campo `AttachmentUrls` contiene gli URL degli allegati file (OneDrive/SharePo
 
 ## Note
 
-- La paginazione recupera 50 messaggi per chiamata API, senza limite al totale.
+- La paginazione recupera 50 messaggi per chiamata API, senza limite al totale. Tra una pagina e l'altra è presente una pausa preventiva di 300ms per ridurre il rischio di throttling.
 - Le risposte nei thread sono sempre incluse.
+- Il campo `UPN` contiene la User Principal Name (email) del mittente, risolta tramite una chiamata a `GET /users/{id}` con cache per evitare chiamate duplicate per lo stesso utente.
 - I canali migrati da Skype for Business (`@thread.skype`) non espongono il nome utente via API.
 - Il `-Resume` salva un delta token dopo ogni sorgente completata. Le run successive con `-Resume` recuperano solo i messaggi nuovi o modificati.
 - Il token OAuth2 viene rinnovato automaticamente prima della scadenza.
