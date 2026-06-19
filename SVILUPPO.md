@@ -46,6 +46,7 @@ Branch principale: main
 | 2026-06-18 | Export Channel Sviluppo SaaS, StartDate 2025-01-01 | OK - 327 msg (18 root + 309 reply, Nov-Dic 2025) |
 | 2026-06-18 | Export Channel Sviluppo SaaS, StartDate 2025-01-01 (con nomi utente) | OK - 5 utenti identificati |
 | 2026-06-18 | Export Chat 1:1 Alessio-Tommaso, filtro utente + date con orario + DownloadMedia | OK - 45 msg (Feb 11 12:22 -> Feb 18 13:17), 3271 totali in chat, throttling gestito |
+| 2026-06-19 | Export Chat 1:1 con nuova versione (UPN + throttling preventivo + DownloadMedia) | OK - 45 msg, campo UPN = asopranzi@intrawelt.com, 39 PNG scaricati (tutti validi, magic bytes 89 50 4E 47), 2 retry 429 gestiti automaticamente |
 
 ## Bug risolti
 
@@ -60,6 +61,7 @@ Branch principale: main
 | Retry 429 mostrava sempre "tentativo 1/5" | $_.Exception.Response perso tra tentativi, Retry-After parsava a 0 | try/catch separato su status e header, backoff minimo max(Retry-After, 2^attempt*5) |
 | 404 su /replies in chat 1:1 | endpoint replies non supportato per chat private | catch 404 silenzioso nel fetch risposte |
 | ChatId troncato in Get-TeamsIds -What Chats | Format-Table taglia valori lunghi | Output con Write-Host su riga separata per ogni chat |
+| ParseError su Write-Verbose con $MessageId: | PS interpreta "$MessageId:" come drive reference | Cambiato in ${MessageId} per delimitare esplicitamente la variabile |
 
 ## Patch applicate (sessione 2026-06-19)
 
@@ -95,6 +97,7 @@ Branch principale: main
 - [x] Throttling preventivo 300ms tra pagine (riduce 429 su chat grandi)
 - [x] Get-TeamsIds -Quick: skip fetch membri per Chats
 - [x] UPN risolto via GET /users/{id} con cache (campo UPN nel CSV)
+- [x] DownloadMedia validato su messaggi reali con immagini incollate (39 PNG, tutti validi)
 
 ## Comandi utili
 

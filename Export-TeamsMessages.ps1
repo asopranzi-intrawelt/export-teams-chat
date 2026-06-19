@@ -379,7 +379,7 @@ function Get-MediaLinks {
     $mediaDir = Join-Path $OutputPath "media"
     if (-not (Test-Path $mediaDir)) { New-Item -ItemType Directory -Path $mediaDir -Force | Out-Null }
 
-    Write-Verbose "  [MediaDebug] HTML del messaggio $MessageId: $($Html.Substring(0, [Math]::Min(300, $Html.Length)))"
+    Write-Verbose "  [MediaDebug] HTML del messaggio ${MessageId}: $($Html.Substring(0, [Math]::Min(300, $Html.Length)))"
     $found = [regex]::Matches($Html, 'src="(https://[^"]+/hostedContents/[^"]+/\$value)"')
     if ($found.Count -eq 0) { return "" }
 

@@ -54,15 +54,14 @@ SVILUPPO.md                 log completo di test, bug e note tecniche
 
 Queste sono le modifiche concrete da applicare al codice. Ognuna è indipendente dalle altre salvo dove indicato.
 
-### 1. Validare il download media su messaggi con immagini reali  *(da testare)*
+### 1. ~~Validare il download media su messaggi con immagini reali~~  *(FATTO — testato 2026-06-19)*
 
-Il flag `-DownloadMedia` è implementato in `Get-MediaLinks` (cerca la funzione in `Export-TeamsMessages.ps1`).
-Usa regex `src="(https://[^"]+/hostedContents/[^"]+/\$value)"` sul body HTML del messaggio.
-Non è ancora stato testato su messaggi che contengono effettivamente immagini incollate.
-Verificare che:
-- il percorso file venga scritto correttamente nel campo `MediaFiles` del CSV
-- il file venga salvato in `output/media/` con estensione corretta
-- la chiamata `Invoke-WebRequest` con il token Graph funzioni sul binary content
+Test eseguito sull'export Chat Alessio-Tommaso (45 msg, Feb 2026) con `-DownloadMedia`:
+- campo `MediaFiles` popolato correttamente (es. `1771412226280_0.png; 1771412226280_1.png; 1771412226280_2.png`)
+- 39 file PNG salvati in `output/media/`, tutti con magic bytes PNG validi (`89 50 4E 47`)
+- dimensioni da 14KB a 289KB (screenshot reali, non placeholder)
+- `Invoke-WebRequest` con token Graph funziona sul binary content
+- regex `src="(https://[^"]+/hostedContents/[^"]+/\$value)"` copre il formato usato dal tenant intrawelt.com
 
 ### 2. ~~Throttling troppo aggressivo sulle chat con molti messaggi~~  *(FATTO)*
 
