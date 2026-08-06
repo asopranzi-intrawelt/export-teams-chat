@@ -1,15 +1,12 @@
 # Stato progetto — export-teams-chat
 
-Questo documento serve a riprendere il progetto in una nuova sessione di Claude Code.
-Leggilo per intero prima di toccare qualsiasi file.
+Questo documento serve a riprendere il progetto in una nuova sessione di Claude Code. Leggilo per intero prima di toccare qualsiasi file.
 
 ---
 
 ## Cos'è
 
-Script PowerShell per esportare messaggi da Microsoft Teams via Microsoft Graph API.
-Tenant: intrawelt.com. Usato per audit, analisi e ricerca messaggi specifici.
-Repo: `git@github-corp:asopranzi-intrawelt/export-teams-chat.git`
+Script PowerShell per esportare messaggi da Microsoft Teams via Microsoft Graph API. Tenant: intrawelt.com. Usato per audit, analisi e ricerca messaggi specifici. Repo: `git@github-corp:asopranzi-intrawelt/export-teams-chat.git`
 
 ---
 
@@ -65,39 +62,24 @@ Test eseguito sull'export Chat Alessio-Tommaso (45 msg, Feb 2026) con `-Download
 
 ### 2. ~~Throttling troppo aggressivo sulle chat con molti messaggi~~  *(FATTO)*
 
-La chat Alessio-Tommaso ha 3271 messaggi. Durante il fetch vengono fatti 65+ chiamate paginate (50 msg/pagina).
-Su ogni pagina si riceve 429 e si attende 10s. Totale: ~10-11 minuti solo per la paginazione.
-Soluzione da valutare: aggiungere un `Start-Sleep -Milliseconds 300` tra una pagina e l'altra dentro `Invoke-GraphPaged`
-per evitare il throttling preventivamente invece di reagirvi. Testare che non rallenti troppo i casi piccoli.
-La funzione da modificare è `Invoke-GraphPaged` in `Export-TeamsMessages.ps1`.
+La chat Alessio-Tommaso ha 3271 messaggi. Durante il fetch vengono fatti 65+ chiamate paginate (50 msg/pagina). Su ogni pagina si riceve 429 e si attende 10s. Totale: ~10-11 minuti solo per la paginazione. Soluzione da valutare: aggiungere un `Start-Sleep -Milliseconds 300` tra una pagina e l'altra dentro `Invoke-GraphPaged` per evitare il throttling preventivamente invece di reagirvi. Testare che non rallenti troppo i casi piccoli. La funzione da modificare è `Invoke-GraphPaged` in `Export-TeamsMessages.ps1`.
 
 ### 3. ~~Get-TeamsIds -What Chats è lento su account con molte chat~~  *(FATTO — aggiunto -Quick)*
 
-Per ogni chat 1:1 viene fatto un API call separato a `/chats/{id}/members`.
-Con 150+ chat (caso Alessio) questo genera 50+ chiamate aggiuntive e può anch'esso incontrare throttling.
-Soluzione: aggiungere un parametro `-Quick` che salta il fetch dei membri e mostra solo Tipo + ChatId,
-oppure fare il fetch membri solo se l'utente passa `-ShowMembers`.
-Il codice da modificare è nel blocco `"Chats"` di `Get-TeamsIds.ps1`.
+Per ogni chat 1:1 viene fatto un API call separato a `/chats/{id}/members`. Con 150+ chat (caso Alessio) questo genera 50+ chiamate aggiuntive e può anch'esso incontrare throttling. Soluzione: aggiungere un parametro `-Quick` che salta il fetch dei membri e mostra solo Tipo + ChatId, oppure fare il fetch membri solo se l'utente passa `-ShowMembers`. Il codice da modificare è nel blocco `"Chats"` di `Get-TeamsIds.ps1`.
 
 ### 4. Campo MediaFiles rimane vuoto anche quando ci sono allegati immagine  *(debug aggiunto — usare -Verbose per loggare HTML raw)*
 
-Da verificare: quando un utente incolla un'immagine in Teams (non la allega come file),
-il body HTML del messaggio contiene un tag `<img src="...hostedContents...">`.
-Se il campo `MediaFiles` è vuoto dopo un export con `-DownloadMedia`, potrebbe essere che:
+Da verificare: quando un utente incolla un'immagine in Teams (non la allega come file), il body HTML del messaggio contiene un tag `<img src="...hostedContents...">`. Se il campo `MediaFiles` è vuoto dopo un export con `-DownloadMedia`, potrebbe essere che:
 - l'immagine è un allegato file (appare in `Allegati` / `AttachmentUrls`) non un hosted content
-- il pattern regex non matcha la variante di URL usata da quel tenant
-Loggare il raw HTML del primo messaggio per confrontare il formato attuale dell'URL.
+- il pattern regex non matcha la variante di URL usata da quel tenant Loggare il raw HTML del primo messaggio per confrontare il formato attuale dell'URL.
 
 ### 5. ~~Il campo UserId nel CSV non è human-readable~~  *(FATTO — Resolve-UserId con cache, campo rinominato UPN)*
 
-Attualmente `UserId` contiene l'Object ID di Azure AD (es. `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`).
-Sarebbe più utile mostrare la UPN (email) che però non è inclusa nel payload `chatMessage.from.user`.
-Per ottenerla serve una chiamata aggiuntiva a `GET /users/{id}` e cachearla (stessa UPN per ogni messaggio dello stesso utente).
-Implementare una cache dizionario `$script:userCache = @{}` e una funzione `Resolve-UserId` che:
+Attualmente `UserId` contiene l'Object ID di Azure AD (es. `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`). Sarebbe più utile mostrare la UPN (email) che però non è inclusa nel payload `chatMessage.from.user`. Per ottenerla serve una chiamata aggiuntiva a `GET /users/{id}` e cachearla (stessa UPN per ogni messaggio dello stesso utente). Implementare una cache dizionario `$script:userCache = @{}` e una funzione `Resolve-UserId` che:
 - controlla la cache prima di chiamare l'API
 - chiama `GET /users/{userId}?$select=userPrincipalName,displayName`
-- salva il risultato in cache
-Aggiornare `ConvertTo-Record` per usare `Resolve-UserId` e popolare `UPN` (rinominare `UserId` → `UPN` di nuovo).
+- salva il risultato in cache Aggiornare `ConvertTo-Record` per usare `Resolve-UserId` e popolare `UPN` (rinominare `UserId` → `UPN` di nuovo).
 
 ---
 
@@ -116,8 +98,7 @@ cd C:\Scripts\export-teams-chat
 Import-Csv "C:\Scripts\export-teams-chat\output\<ultimo file>.csv" | Out-GridView
 ```
 
-Risultati attesi test canale: ~327 messaggi, 5 utenti, date Nov-Dic 2025.
-Risultati attesi test chat: 45 messaggi, solo Alessio Sopranzi, date Feb 2026.
+Risultati attesi test canale: ~327 messaggi, 5 utenti, date Nov-Dic 2025. Risultati attesi test chat: 45 messaggi, solo Alessio Sopranzi, date Feb 2026.
 
 ---
 

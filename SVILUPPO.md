@@ -33,8 +33,7 @@ C:\Scripts\export-teams-chat\
 
 ## Repository
 
-`git@github-corp:asopranzi-intrawelt/export-teams-chat.git`
-Branch principale: main
+`git@github-corp:asopranzi-intrawelt/export-teams-chat.git` Branch principale: main
 
 ## Test eseguiti
 
