@@ -1,0 +1,51 @@
+INCARICO PER L'ESTRAZIONE DI UNA CONVERSAZIONE TEAMS
+Da completare e sottoscrivere | Riservato
+
+Il sottoscritto <CEO>, in qualità di CEO di <azienda> e nell'esercizio dei propri poteri aziendali, autorizza <IT-manager>, IT manager, a estrarre la conversazione diretta Microsoft Teams tra <partecipante-A> e <partecipante-B>, per lo scopo e nel periodo indicati nel presente incarico.
+La Direzione compila la sezione 1; il referente privacy/legale la sezione 2; Direzione e IT la sezione 3. Le istruzioni sono accanto a ciascun campo. Completare il Word e produrre la versione definitiva da firmare. Per le condizioni non applicabili, indicare il motivo. L'attività può iniziare dopo la sottoscrizione e la verifica dell'incarico da parte dell'IT.
+
+1. Società, scopo e perimetro
+Società titolare e sede | Direzione: copiare ragione sociale e sede dall'informativa privacy aziendale, verificandole nei documenti societari. Nel GDPR il titolare è normalmente la società. | Ragione sociale: __________  Sede: __________
+Poteri del firmatario | Direzione: indicare il riferimento al documento da cui risultano i poteri del CEO, ad esempio visura, statuto o procura. L'IT non deve ricostruirli. | Documento e riferimento: __________________
+Riferimento dell'incarico | Direzione: numero di pratica o protocollo, se usato. La data effettiva viene apposta con la firma. | Riferimento interno, se presente: _______________
+Finalità e vicenda | Compila il CEO: «I messaggi mi servono per [uso concreto], con riferimento a [fatti, progetto o vicenda]». L'IT non deve formulare lo scopo al suo posto. | Uso previsto: __________  Vicenda: __________
+Necessità e dati richiesti | Compila il CEO: spiegare perché servono questi messaggi, perché non bastano altri documenti e se occorre conservare anche la copia tecnica con metadati. | Motivo: __________  Copia tecnica necessaria: __________
+Periodo autorizzato | <CEO> conferma o restringe il periodo proposto rispetto alla vicenda. Inizio incluso, fine esclusa; fuso Europe/Rome. | Proposta da confermare: 01/01/2025 ore 00:00 - 01/01/2026 ore 00:00 escluso.
+Il report conserva i messaggi di entrambi gli interlocutori in ordine cronologico, con autore, testo, timestamp UTC e italiano e riferimenti alle risposte. La copia tecnica contiene il corpo originale e i metadati dei messaggi del periodo. Sono esclusi gruppi, canali e altre conversazioni; allegati e immagini non sono scaricati come file.
+
+2. Verifica privacy e legale
+Base giuridica | Referente privacy/legale: individuare la norma dell'art. 6 GDPR e motivarla sulla finalità dichiarata. Il legittimo interesse richiede una valutazione documentata. Questo campo non compete all'IT. | Articolo e motivazione: __________________
+Informativa e garanzie applicabili | Referente privacy/legale: verificare informative e policy comunicate, riservatezza e uso dei messaggi. Per i lavoratori, verificare artt. 4 e 8 dello Statuto e artt. 113-114 del Codice privacy, con eventuali accordi o autorizzazioni necessari. | Documenti esaminati e riscontri: __________________
+Dati particolari, reati e terzi | Referente privacy/legale: valutare artt. 9 e 10 GDPR e dati di terzi. Istruire l'IT a sospendere e richiedere una rivalutazione se emergono contenuti non previsti o non pertinenti. | Condizioni e istruzioni: __________________
+Esito della verifica | Referente privacy/legale: nome, funzione, data, esito e riferimento della valutazione scritta. Richiamare il parere del DPO se nominato. | Referente: __________  Data: __________  Esito e riferimento: __________________
+Usi personali estranei alla società richiedono una distinta valutazione prima dell'accesso ai dati.
+
+3. Destinatari e gestione dei file
+Destinatari | Conferma il CEO. Per ogni altra persona indicare nome, ruolo ed esigenza; l'IT ha soltanto l'accesso necessario all'esecuzione. | Proposta: consegna al CEO; accesso tecnico dell'IT manager. Altri destinatari: __________
+Custodia e consegna | Compila l'IT: percorso dell'archivio aziendale riservato, persona che custodisce i file e mezzo effettivo di consegna. | Archivio: __________  Custode: __________  Consegna: __________
+Sicurezza e backup | Compila l'IT: cifratura e autorizzazioni effettivamente configurate, gestione delle copie e dei backup. Non dichiarare misure ancora da predisporre. | Cifratura: __________  Accessi: __________  Copie e backup: __________
+Conservazione e riesame | <CEO>, con il referente privacy/legale, decide una scadenza motivata rispetto allo scopo. L'IT non sceglie una durata arbitraria. Indicare anche chi riesamina e quando. | Scadenza e motivo: __________  Riesame, data e referente: __________
+Cancellazione | Compila l'IT: chi elimina i file, come verifica l'eliminazione e come gestisce le copie nei backup. | Responsabile: __________  Procedura e backup: __________
+
+4. Istruzioni e sottoscrizioni
+<IT-manager> esegue il solo incarico tecnico in sola lettura, sotto l'autorità del titolare, ai sensi dell'art. 29 GDPR e dell'art. 2-quaterdecies del d.lgs. n. 196/2003. Se il rapporto è esterno all'organizzazione, definire prima dell'accesso il ruolo e gli eventuali adempimenti dell'art. 28 GDPR.
+L'operatore rispetta chat e periodo autorizzati e consegna esclusivamente ai destinatari indicati. Registra documento firmato e relativa impronta SHA-256, operatore, data e ora, periodo, numero di messaggi, file prodotti e loro impronte, consegna e cancellazione. I contenuti restano nei sistemi aziendali riservati: sono vietati account personali, repository e servizi AI. In caso di condizioni mancanti o diverse da quelle valutate, sospende e richiede istruzioni scritte. Cambiamenti di scopo, periodo o destinatari richiedono una nuova valutazione.
+Il titolare determina finalità, base giuridica e durata; l'IT prende in carico le istruzioni documentate. Restano ferme le responsabilità previste dalla legge e i diritti degli interessati. Le impronte identificano la versione dei file; la verifica di firma, provenienza e poteri è umana. Per l'uso in un procedimento, valutare separatamente completezza e modalità di acquisizione.
+<CEO> | Luogo e data: ____________________  Firma: ____________________
+<IT-manager> - presa in carico | Data e firma: __________________________________
+
+5. Fonti normative
+Regolamento (UE) 2016/679: artt. 5-6 per finalità, necessità e base giuridica; artt. 9-10 per condizioni ulteriori; artt. 13-14 per le informazioni agli interessati; artt. 24-25 e 32 per responsabilità e sicurezza; artt. 28-29 per incarichi e ruoli; artt. 38-39 per il DPO e art. 88 per il contesto lavorativo.
+Testo pubblicato dal Garante: https://www.garanteprivacy.it/il-testo-del-regolamento
+Pubblicazione EUR-Lex: https://eur-lex.europa.eu/legal-content/IT/TXT/?uri=CELEX:32016R0679
+Comitato europeo per la protezione dei dati, linee guida 07/2020, paragrafi 17-18: per i trattamenti di un'organizzazione, il titolare è normalmente l'organizzazione stessa; il CEO agisce nell'ambito dei suoi poteri. Testo: https://www.edpb.europa.eu/system/files/documents/2023-10/edpb_guidelines_202007_controllerprocessor_final_it.pdf
+Decreto legislativo 30 giugno 2003, n. 196: art. 2-quaterdecies per l'attribuzione di compiti alle persone autorizzate; artt. 113-114 per i rinvii alle garanzie lavoristiche.
+Testo coordinato del Garante: https://www.garanteprivacy.it/codice
+Legge 20 maggio 1970, n. 300: art. 4 per strumenti di controllo, strumenti di lavoro e condizioni dell'uso dei dati; art. 8 per i limiti alle indagini sulle opinioni e su fatti estranei all'attitudine professionale.
+Art. 4, Normattiva: https://www.normattiva.it/atto/caricaDettaglioAtto?atto.articolo.numero=4&atto.codiceRedazionale=070U0300&atto.dataPubblicazioneGazzetta=1970-05-27
+Art. 8, Gazzetta Ufficiale: https://www.gazzettaufficiale.it/atto/serie_generale/caricaArticolo?art.idArticolo=8&art.versione=1&art.codiceRedazionale=070U0300&art.dataPubblicazioneGazzetta=1970-05-27&art.idGruppo=1&art.idSottoArticolo=1&art.idSottoArticolo1=10&art.progressivo=0&art.flagTipoArticolo=0
+Garante, provvedimento 9 ottobre 2025, n. 613, sugli accessi alla posta aziendale. Il riferimento ai criteri per una chat Teams costituisce una valutazione per analogia da verificare sul caso concreto.
+Provvedimento: https://www.garanteprivacy.it/home/docweb/-/docweb-display/docweb/10185435
+Linee guida storiche del Garante su posta e Internet, 1 marzo 2007: https://www.garanteprivacy.it/home/docweb/-/docweb-display/docweb/1387522
+Fonti verificate il 9 ottobre 2026. I testi integrali del GDPR e del Codice privacy pubblicati dal Garante e il registro di provenienza sono incorporati nel PDF: si aprono dall'area Allegati del lettore PDF. Sono copie informative; il testo autentico resta quello delle Gazzette ufficiali competenti.
+Note: GDPR, Regolamento generale sulla protezione dei dati; CEO, funzione esecutiva i cui poteri sono dichiarati nel modulo; IT, sistemi informativi; DPO, responsabile della protezione dei dati; SHA-256, impronta del file.

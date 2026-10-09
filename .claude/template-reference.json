@@ -1,0 +1,9 @@
+{
+  "mode": "adozione-selettiva",
+  "template_commit": "e3b82195d1931a2da2841e1c7f571f37db60ceb7",
+  "source_view": "working-tree",
+  "template_has_uncommitted_changes": true,
+  "provenance_note": "Il commit identifica la base del template; i file sono stati letti dal suo working tree, che include modifiche non committate. Le copie adottate sono ispezionabili nel progetto.",
+  "adopted_at": "2026-10-09",
+  "scope": "Istruzioni condivise, regole di base, memoria e contesto, strumenti di ripresa e verifica, skill normative. Nessun pacchetto di stack, server MCP o configurazione di account."
+}

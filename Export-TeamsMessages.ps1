@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Estrae messaggi da Microsoft Teams tramite Microsoft Graph API.
     Tutti i filtri sono combinabili tra loro (AND tra tipi diversi).
@@ -17,7 +17,7 @@
     GUID del Team. Richiesto per Mode=Channel.
 
 .PARAMETER ChannelId
-    ID del canale (es. "19:abc...@thread.tacv2"). Richiesto per Mode=Channel.
+    ID del canale (es. "19:<utente>@<dominio>2"). Richiesto per Mode=Channel.
 
 .PARAMETER UserId
     UPN o Object ID. In Mode=UserChats: indica di chi recuperare le chat.
@@ -25,7 +25,7 @@
 
 .PARAMETER Users
     Lista mittenti separati da virgola (OR tra loro).
-    Es: "mario@intrawelt.com,luigi@intrawelt.com"
+    Es: "<utente>@<dominio>,<utente>@<dominio>"
     Compatibile con tutti i Mode.
 
 .PARAMETER StartDate
@@ -79,17 +79,17 @@
 .EXAMPLE
     # Chat privata: messaggi di due utenti con keyword, in un periodo
     .\Export-TeamsMessages.ps1 -Mode Chat -ChatId "19:xxx@thread.v2" `
-        -Users "mario@intrawelt.com,luigi@intrawelt.com" `
+        -Users "<utente>@<dominio>,<utente>@<dominio>" `
         -Keywords "contratto,NDA" -StartDate "2025-01-01" -EndDate "2025-06-30"
 
 .EXAMPLE
     # Canale: messaggi che contengono TUTTE le keyword (AND)
-    .\Export-TeamsMessages.ps1 -Mode Channel -TeamId "aaa-bbb" -ChannelId "19:yyy@thread.tacv2" `
+    .\Export-TeamsMessages.ps1 -Mode Channel -TeamId "aaa-bbb" -ChannelId "19:<utente>@<dominio>2" `
         -Keywords "fattura,approvata" -KeywordAnd -MatchMode Insensitive
 
 .EXAMPLE
     # Tutte le chat di un utente, regex per codici fiscali italiani
-    .\Export-TeamsMessages.ps1 -Mode UserChats -UserId "mario@intrawelt.com" `
+    .\Export-TeamsMessages.ps1 -Mode UserChats -UserId "<utente>@<dominio>" `
         -Keywords "[A-Z]{6}\d{2}[A-Z]\d{2}[A-Z]\d{3}[A-Z]" -MatchMode Regex
 
 .EXAMPLE
@@ -147,8 +147,8 @@ if (-not (Test-Path $configPath)) {
 }
 $cfg = Get-Content $configPath -Raw | ConvertFrom-Json
 foreach ($f in @("TenantId","ClientId","ClientSecret")) {
-    if ($cfg.$f -like "INSERISCI*") {
-        Write-Error "Compilare '$f' in config.json prima di eseguire."; exit 1
+    if ([string]::IsNullOrWhiteSpace($cfg.$f) -or $cfg.$f -like "INSERISCI*" -or $cfg.$f -match '^<') {
+        Write-Error "Compilare '$f' in config.local.json prima di eseguire."; exit 1
     }
 }
 $TenantId     = $cfg.TenantId

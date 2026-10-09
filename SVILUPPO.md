@@ -6,10 +6,10 @@ Documento di stato per riprendere il progetto in qualsiasi momento.
 
 | Campo | Valore |
 |---|---|
-| Tenant | intrawelt.com |
-| Tenant ID | 5f7f1a52-302a-4d90-a9c6-d89cc40f133b |
-| App | TeamsExporter |
-| Client ID | 3c10bf5a-615c-4e83-b27d-9c894262de52 |
+| Tenant | <dominio-aziendale> |
+| Tenant ID | <identificativo> |
+| App | <nome-app> |
+| Client ID | <identificativo> |
 | Secret | in config.local.json (scadenza ~giugno 2028) |
 
 Permessi Application concessi: Channel.ReadBasic.All, ChannelMessage.Read.All, Chat.Read.All, Team.ReadBasic.All, User.Read.All
@@ -17,7 +17,7 @@ Permessi Application concessi: Channel.ReadBasic.All, ChannelMessage.Read.All, C
 ## Struttura file
 
 ```
-C:\Scripts\export-teams-chat\
+<radice-progetto>\
   Export-TeamsMessages.ps1   script principale
   Get-TeamsIds.ps1            utility scoperta ID
   config.json                 template (committato)
@@ -33,7 +33,7 @@ C:\Scripts\export-teams-chat\
 
 ## Repository
 
-`git@github-corp:asopranzi-intrawelt/export-teams-chat.git` Branch principale: main
+`git@<alias>:<owner>/<repository>.git` Branch principale: main
 
 ## Test eseguiti
 
@@ -44,8 +44,8 @@ C:\Scripts\export-teams-chat\
 | 2026-06-18 | Export Channel IT General, nessun filtro | OK - 126 msg (2019-2021, legacy Skype) |
 | 2026-06-18 | Export Channel Sviluppo SaaS, StartDate 2025-01-01 | OK - 327 msg (18 root + 309 reply, Nov-Dic 2025) |
 | 2026-06-18 | Export Channel Sviluppo SaaS, StartDate 2025-01-01 (con nomi utente) | OK - 5 utenti identificati |
-| 2026-06-18 | Export Chat 1:1 Alessio-Tommaso, filtro utente + date con orario + DownloadMedia | OK - 45 msg (Feb 11 12:22 -> Feb 18 13:17), 3271 totali in chat, throttling gestito |
-| 2026-06-19 | Export Chat 1:1 con nuova versione (UPN + throttling preventivo + DownloadMedia) | OK - 45 msg, campo UPN = asopranzi@intrawelt.com, 39 PNG scaricati (tutti validi, magic bytes 89 50 4E 47), 2 retry 429 gestiti automaticamente |
+| 2026-06-18 | Export Chat 1:1 <partecipante-A>-<partecipante-B>, filtro utente + date con orario + DownloadMedia | OK - 45 msg (Feb 11 12:22 -> Feb 18 13:17), 3271 totali in chat, throttling gestito |
+| 2026-06-19 | Export Chat 1:1 con nuova versione (UPN + throttling preventivo + DownloadMedia) | OK - 45 msg, campo UPN = <utente>@<dominio>, 39 PNG scaricati (tutti validi, magic bytes 89 50 4E 47), 2 retry 429 gestiti automaticamente |
 
 ## Bug risolti
 
@@ -102,7 +102,7 @@ C:\Scripts\export-teams-chat\
 
 ```powershell
 # Verifica rapida contenuto export (apre griglia interattiva)
-Import-Csv "C:\Scripts\export-teams-chat\output\<file>.csv" | Out-GridView
+Import-Csv "<radice-progetto>\output\<file>.csv" | Out-GridView
 
 # Lista team disponibili
 .\Get-TeamsIds.ps1 -What Teams
@@ -111,7 +111,7 @@ Import-Csv "C:\Scripts\export-teams-chat\output\<file>.csv" | Out-GridView
 .\Get-TeamsIds.ps1 -What Channels -TeamId "<guid>"
 
 # Lista chat di un utente con partecipanti
-.\Get-TeamsIds.ps1 -What Chats -UserId "utente@intrawelt.com"
+.\Get-TeamsIds.ps1 -What Chats -UserId "<utente>@<dominio>"
 
 # Export base canale
 .\Export-TeamsMessages.ps1 -Mode Channel -TeamId "<guid>" -ChannelId "<id>" -StartDate "2026-01-01"

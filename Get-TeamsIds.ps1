@@ -1,4 +1,4 @@
-<#
+﻿<#
 .SYNOPSIS
     Mostra Team, canali e chat disponibili con i relativi ID.
     Usare per recuperare TeamId, ChannelId, ChatId da passare a Export-TeamsMessages.ps1
@@ -13,11 +13,11 @@
 
 .EXAMPLE
     # Lista chat di un utente (con partecipanti per le chat 1:1)
-    .\Get-TeamsIds.ps1 -What Chats -UserId "mario.rossi@intrawelt.com"
+    .\Get-TeamsIds.ps1 -What Chats -UserId "<utente>@<dominio>"
 
 .EXAMPLE
     # Lista chat veloce senza fetch dei partecipanti (utile su account con molte chat)
-    .\Get-TeamsIds.ps1 -What Chats -UserId "mario.rossi@intrawelt.com" -Quick
+    .\Get-TeamsIds.ps1 -What Chats -UserId "<utente>@<dominio>" -Quick
 #>
 
 [CmdletBinding()]

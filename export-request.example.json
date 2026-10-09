@@ -1,0 +1,18 @@
+{
+  "Status": "Draft",
+  "Participant1": "<partecipante-A>",
+  "Participant2": "<partecipante-B>",
+  "Authorization": "<testo coerente con il documento firmato>",
+  "TimeZoneId": "W. Europe Standard Time",
+  "Purpose": "",
+  "LegalBasis": "",
+  "StartDate": "2025-01-01T00:00:00+01:00",
+  "EndDateExclusive": "2026-01-01T00:00:00+01:00",
+  "Recipients": "",
+  "RetentionUntil": "",
+  "ApprovalReference": "",
+  "AuthorizationDate": "",
+  "SignedAuthorizationPath": "",
+  "SignedAuthorizationSha256": "",
+  "PrerequisitesReviewed": false
+}
