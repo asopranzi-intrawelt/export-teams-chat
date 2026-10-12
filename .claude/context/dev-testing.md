@@ -8,7 +8,7 @@ covers-paths:
   - 'Export-TeamsEvidence.ps1'
   - 'requirements-evidence.txt'
   - 'tools/**'
-last-verified-commit: d09fa5b4d0c9480c6be04c3b109041484a3e5038
+last-verified-commit: 937b2416e3bc9d5b06a91d2d62aa4a0451aa7252
 ---
 
 # Verifiche
@@ -36,5 +36,7 @@ La prova del tool completo usa sole fixture sintetiche e HTTP simulato:
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File tests/Test-TeamsEvidence.ps1
 ```
+
+Dal 2026-10-12 la fixture contiene anche un messaggio la cui risposta non riporta il nome del mittente, perché il caso si è presentato su dati reali e ha fermato un'acquisizione. La prova del tool verifica che `verifiche.json` ne conti esattamente uno; quella dell'esportatore verifica che la vista dichiari «(mittente non disponibile)» e conservi l'identificativo dell'autore, e conta i due interlocutori per identificativo invece che per nome. La regola precedente, misurata sulle quattro righe della fixture, scarta una riga; quella corretta nessuna.
 
 Esercita i percorsi ordinario e anticipato, la paginazione e i duplicati coerenti, il confronto locale delle viste con le risposte, il PDF e i manifesti, il trasferimento dei cinque file e il divieto di sovrascrittura prima di HTTP. Una modifica reale del CSV deve essere rifiutata; il ripristino è controllato mediante hash. Verificato anche il confronto del manifesto con un'impronta indipendente. Le prove cadono sulle copie mutate che omettono il confronto della richiesta all'istruzione e la verifica del checksum esterno. Sorgenti canonici invariati; test e registri di mutazione privati.

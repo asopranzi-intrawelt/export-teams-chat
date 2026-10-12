@@ -1,5 +1,13 @@
 # Decisioni
 
+## ADR-009 - Un messaggio senza nome del mittente si dichiara, non si ricostruisce
+
+Data: 2026-10-12. Una risposta Graph del 2024 riporta `displayName` nullo per un messaggio di un partecipante verificato, e la verifica del pacchetto si è fermata perché confrontava quel campo con la dicitura che l'esportatore scrive al suo posto. Si sceglie di non dedurre il nome dall'identificativo, che pure lo renderebbe determinabile: le viste continuano a dichiarare «(mittente non disponibile)» e il verbale riporta quanti messaggi si trovano in quella condizione. L'identificativo dell'autore resta confrontato con la fonte senza eccezioni, così la guardia continua a cadere se cambia davvero l'autore. La fixture sintetica riproduce il caso e misura la differenza fra la regola precedente e quella corretta.
+
+## ADR-008 - Un fascicolo per ciascun interessato e periodo
+
+Data: 2026-10-12. L'utente chiede tre nuove acquisizioni fuori dal perimetro del fascicolo esistente, che copre Potalivo / Vergani per il solo 2025 e prescrive una nuova valutazione al cambiare di periodo o di interessato, e ordina di replicare esattamente l'impianto già usato. Si produce quindi un documento da firmare per ciascun export, derivato da quello compilato dall'utente e diverso solo nei punti che nominano interessato e periodo, con la propria richiesta Draft e la propria istruzione anticipata vincolata mediante hash. Un unico documento esteso a tre perimetri non viene costruito: renderebbe indistinguibili le sottoscrizioni e le revoche. Il documento compilato dall'utente resta invariato e nessuna firma, base giuridica o verifica dei presupposti viene dichiarata acquisita. ADR-007 continua a valere per il modo in cui l'ordine di procedere prima della firma viene registrato.
+
 ## ADR-007 - Esecuzione su istruzione esplicita prima della firma
 
 Data: 2026-10-09. L'utente ordina l'export e la consegna in rete, precisa che apporrà successivamente le firme e chiede di eliminare dalla documentazione i riferimenti ai progetti locali e alle modalità di consultazione delle fonti. L'ordine supera l'attesa operativa di ADR-002 per questo caso. Il percorso ordinario firmato resta disponibile; il parametro dedicato accetta una separata istruzione documentata, vincolata mediante hash alla richiesta e al Word. Lo stato Draft, l'assenza di firma e la verifica giuridica non attestata restano espliciti. Nessun campo Approved o verifica umana viene simulato. Dati reali usati soltanto per l'acquisizione richiesta e per controlli locali, senza inviare testi al modello. La consegna riunisce il risultato in cinque file, con archivio tecnico e verbale unico; nessun riferimento ai progetti normativi locali nei documenti consegnati.

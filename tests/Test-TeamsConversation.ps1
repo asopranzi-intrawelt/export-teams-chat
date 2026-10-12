@@ -41,7 +41,9 @@ function Assert-RejectedBeforeNetwork {
 
 function New-TestMessage {
     param([string]$Id,[string]$Created,[string]$Sender,[string]$Text,[string]$Parent='')
-    [pscustomobject]@{id=$Id;messageType='message';createdDateTime=$Created;from=@{user=@{id=$Sender;displayName=if($Sender -eq 'u-a'){'Alfa Persona'}else{'Beta Persona'}}};body=@{contentType='html';content=$Text};attachments=@();replyToId=$Parent}
+    # Graph puo' restituire un messaggio senza il nome del mittente: 'm2' riproduce quel caso.
+    $name = if ($Id -eq 'm2') { $null } elseif ($Sender -eq 'u-a') { 'Alfa Persona' } else { 'Beta Persona' }
+    [pscustomobject]@{id=$Id;messageType='message';createdDateTime=$Created;from=@{user=@{id=$Sender;displayName=$name}};body=@{contentType='html';content=$Text};attachments=@();replyToId=$Parent}
 }
 function Invoke-RestMethod {
     param([string]$Method,[string]$Uri,$Headers,$Body)
@@ -107,7 +109,8 @@ $result = & $exporter -RequestPath $requestPath -ConfigPath $configPath -OutputP
 $csv = @(Import-Csv -LiteralPath (Join-Path $result.OutputPath 'messaggi.csv') -Encoding UTF8)
 Assert-Test ($csv.Count -eq 4) 'Entrambi i mittenti, deduplicazione e periodo'
 Assert-Test (($csv.MessageId -join ',') -eq 'm1,m2,m3,m4') 'Ordine cronologico crescente'
-Assert-Test ((@($csv | Group-Object Mittente).Count) -eq 2) 'Botta e risposta preservato'
+Assert-Test ((@($csv | Group-Object UserId).Count) -eq 2) 'Botta e risposta preservato'
+Assert-Test ($csv[1].Mittente -eq '(mittente non disponibile)' -and $csv[1].UserId -eq 'u-b') 'Mittente senza nome dichiarato e identificativo conservato'
 Assert-Test ($csv[0].TimestampLocale -eq '2025-01-01 00:00:00.000 +01:00') 'Inclusione del limite iniziale in ora italiana'
 Assert-Test ($csv[1].TimestampLocale -eq '2025-03-30 03:30:00.000 +02:00') 'Passaggio all ora legale'
 Assert-Test ($csv[2].TimestampLocale -eq '2025-06-12 12:00:00.000 +02:00') 'Ora estiva'

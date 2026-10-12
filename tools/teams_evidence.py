@@ -18,6 +18,8 @@ import zipfile
 import fitz
 
 ARTIFACTS = {'Conversazione.html', 'Conversazione.csv', 'Acquisizione_tecnica.zip', 'Verbale_acquisizione.pdf', 'SHA256.csv'}
+# Dicitura con cui l'esportatore rende un messaggio la cui fonte non riporta il nome del mittente.
+UNNAMED_SENDER = '(mittente non disponibile)'
 REFERENCES = (
     ('CAD, art. 20', 'https://def.giustiziatributaria.gov.it/DocTribFrontend/executePrintArticolo.do?articolo=Articolo+20&codiceOrdinamento=0000000000000200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000&id=%7B263C3642-90D1-44B6-9D9D-0129165C9324%7D'),
     ('Codice civile, art. 2712', 'https://def.giustiziatributaria.gov.it/DocTribFrontend/executePrintArticolo.do?codiceOrdinamento=0000000000027120000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000&id=%7BC8475535-0D72-4F0B-B968-8CB43A5A6377%7D&idAttoNormativo=%7B9E93F1BE-06AE-4F24-8E9D-B838F7E0C2E6%7D'),
@@ -107,12 +109,17 @@ def validate_acquisition(work):
     html = (export / 'conversazione.html').read_text(encoding='utf-8-sig')
     articles = re.findall(r'<article\b[^>]*id="message-(\d+)"[^>]*>(.*?)</article>', html, re.S)
     require(len(articles) == len(rows), 'Numero di messaggi HTML non conforme.')
+    unnamed = 0
     for index, (row, (ordinal, article)) in enumerate(zip(rows, articles), 1):
         msg = raw.get((row['ChatId'], row['MessageId']))
         require(msg is not None, 'Messaggio CSV non presente nella fonte.')
         require(ordinal == str(index), 'Ordine HTML non conforme.')
         require(instant(row['Data']) == instant(msg['createdDateTime']) == instant(row['TimestampLocale']), 'Timestamp non conforme alla fonte.')
-        require(row['UserId'] == msg['from']['user']['id'] and row['Mittente'] == msg['from']['user']['displayName'], 'Autore non conforme alla fonte.')
+        # L'identificativo e' sempre confrontato con la fonte; il nome manca in alcuni messaggi e la vista lo dichiara.
+        source_name = msg['from']['user']['displayName'] or ''
+        if not source_name:
+            unnamed += 1
+        require(row['UserId'] == msg['from']['user']['id'] and row['Mittente'] == (source_name or UNNAMED_SENDER), 'Autore non conforme alla fonte.')
         require(row['ParentId'] == (msg.get('replyToId') or ''), 'Riferimento alla risposta non conforme.')
         require(norm(row['Testo']) == norm(body_text(msg)), 'Testo CSV non conforme alla fonte.')
         rendered = re.search(r'<p class="text">(.*?)</p>', article, re.S)
@@ -157,6 +164,7 @@ def validate_acquisition(work):
         'RawResponseMessagesMatchTechnicalCopy': True, 'SavedResponseHashesVerified': True,
         'SelectedResponseCount': len(selected), 'DiscoveryResponsesExcluded': len(log) - len(selected),
         'BoundaryMessagesInResponseArchive': boundary,
+        'MessagesWithoutSourceSenderName': unnamed,
         'ToolVersions': {'Python': sys.version.split()[0], 'PyMuPDF': fitz.VersionBind},
     }
     (work / 'verifiche.json').write_bytes(json_bytes(checks))
@@ -201,6 +209,7 @@ def create_report(work, output):
         h += f'<tr><td class="label">{escape(label)}</td><td>{escape(value)}</td></tr>'
     h += '</table><h2>Verifiche di integrità</h2><p>Confrontati tutti i messaggi fra risposte Graph, copia tecnica JSON, CSV e conversazione HTML. Verificati identificativi, autori, testo, riferimenti alle risposte, timestamp, periodo, ordine cronologico e assenza di duplicati nelle viste. Gli istanti UTC e locali coincidono.</p>'
     h += f'<p>Risposte conservate della sola conversazione: {checks["SelectedResponseCount"]}. Le risposte di ricerca relative ad account o altre chat sono escluse dalla consegna. Eventuali messaggi fuori intervallo nelle pagine di confine: {checks["BoundaryMessagesInResponseArchive"]}; restano nel JSON della risposta e sono esclusi da HTML e CSV.</p>'
+    h += f'<p>Messaggi la cui risposta Graph non riporta il nome del mittente: {checks["MessagesWithoutSourceSenderName"]}. Nelle viste compaiono come «{escape(UNNAMED_SENDER)}»; l’identificativo dell’autore è comunque confrontato con la fonte e corrisponde a uno dei due partecipanti verificati.</p>'
     h += '<p>Verificate le impronte SHA-256 del documento, del codice utilizzato, dei dati esportati e delle risposte salvate. L’archivio tecnico contiene il registro delle richieste, i metadati HTTP disponibili e un manifesto interno. SHA256.csv identifica i quattro artefatti della consegna.</p>'
     h += '<h2>Consegna e custodia</h2>'
     if receipt:

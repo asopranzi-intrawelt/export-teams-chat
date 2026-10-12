@@ -22,6 +22,9 @@ foreach ($file in $receipt.Files) {
 }
 $run = Get-Content -LiteralPath (Join-Path $result.WorkPath 'esito.json') -Raw -Encoding UTF8 | ConvertFrom-Json
 Assert-Test ($run.Status -eq 'DeliveredAndVerified') 'Stato conclusivo effettivo'
+# Un messaggio della fixture non ha il nome del mittente: la verifica lo accetta e lo conta.
+$checks = Get-Content -LiteralPath (Join-Path $result.WorkPath 'verifiche.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+Assert-Test ($checks.MessagesWithoutSourceSenderName -eq 1) 'Messaggi senza nome del mittente contati nelle verifiche'
 # Un output esistente deve essere rifiutato prima di HTTP.
 $before = $global:teamsConversationTestRequests.Count
 $caught = $false
