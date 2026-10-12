@@ -1,6 +1,6 @@
 # Snapshot del progetto
 
-Branch: `main`. Commit di riferimento: `937b241`, con il lavoro del 2026-10-12 ancora nel working tree. Data: 2026-10-12. Provenienza del sistema: `.claude/template-reference.json`, adozione selettiva.
+Branch: `main`. Commit di riferimento: `e7efaab`, albero di lavoro pulito. Data: 2026-10-12. Provenienza del sistema: `.claude/template-reference.json`, adozione selettiva.
 
 ## Stato delle schede
 
@@ -9,8 +9,8 @@ Branch: `main`. Commit di riferimento: `937b241`, con il lavoro del 2026-10-12 a
 | STACK.md | d09fa5b | Letta sul codice e aggiornata con le modifiche non committate |
 | design-and-security.md | d09fa5b | Presupposti, separazione privata e limiti documentati |
 | deployment.md | d09fa5b | Uso locale esistente e prove sintetiche documentati |
-| dev-testing.md | 937b241 | Prove offline estese al mittente senza nome |
-| current-work.md | 937b241 | Tre nuove consegne verificate e correzione del verificatore |
+| dev-testing.md | e7efaab | Prove offline estese al mittente senza nome |
+| current-work.md | e7efaab | Tre nuove consegne verificate e correzione del verificatore |
 | roadmap.md | d09fa5b | Lavoro tecnico completato; chiusura preparata |
 
 ## Punto di ripresa
@@ -21,6 +21,6 @@ Su ulteriore richiesta dell'utente il flusso diventa un tool del progetto: `Expo
 
 I nominativi, i documenti compilati e la configurazione effettiva sono nel livello privato. Le copie correnti dei vecchi documenti sono state anonimizzate; la storia git conserva i vecchi valori. Commit e push competono all'utente.
 
-Il 2026-10-12 l'utente chiede di ripetere l'export per il 2024 di Roberta Vergani e per il 2025 e il 2024 di Nicolas Pena Ugarte, con lo stesso interlocutore Alessandro Potalivo e tre cartelle separate sulla stessa condivisione. Il fascicolo esistente copre il solo 2025 di Vergani e chiede una nuova valutazione al cambiare di periodo o interessato: su ordine esplicito dell'utente l'impianto è stato replicato, con un documento da firmare per ciascun export, la propria richiesta Draft e la propria istruzione anticipata vincolata mediante hash (ADR-008). Consegnati e verificati tre pacchetti di cinque file: 1.539, 1.919 e 2.184 messaggi, impronte locali e di rete coincidenti. Un messaggio del 2024 senza nome del mittente nella fonte ha fermato la terza verifica: il verificatore ora riconosce la dicitura delle viste, conta quei messaggi e li dichiara nel verbale, mentre l'identificativo dell'autore resta confrontato senza eccezioni (ADR-009). Le tre acquisizioni sono state rifatte nello stesso giro perché i primi verbali riportavano la finalità con l'apostrofo al posto dell'accento, difetto introdotto dall'agente e segnalato prima di qualunque rimedio; valgono le consegne con timestamp 20261012T0854, T0855 e T0856. P-006 chiusa per l'esecuzione tecnica; P-007 aperta per la rimozione delle tre cartelle superate, che spetta all'utente; P-001 e P-002 valgono ora anche per il nuovo perimetro e per tre documenti ancora da firmare.
+Il 2026-10-12 l'utente chiede di ripetere l'export per il 2024 di Roberta Vergani e per il 2025 e il 2024 di Nicolas Pena Ugarte, con lo stesso interlocutore Alessandro Potalivo e tre cartelle separate sulla stessa condivisione. Il fascicolo esistente copre il solo 2025 di Vergani e chiede una nuova valutazione al cambiare di periodo o interessato: su ordine esplicito dell'utente l'impianto è stato replicato, con un documento da firmare per ciascun export, la propria richiesta Draft e la propria istruzione anticipata vincolata mediante hash (ADR-008). Consegnati e verificati tre pacchetti di cinque file: 1.539, 1.919 e 2.184 messaggi, impronte locali e di rete coincidenti. Un messaggio del 2024 senza nome del mittente nella fonte ha fermato la terza verifica: il verificatore ora riconosce la dicitura delle viste, conta quei messaggi e li dichiara nel verbale, mentre l'identificativo dell'autore resta confrontato senza eccezioni (ADR-009). Le tre acquisizioni sono state rifatte nello stesso giro perché i primi verbali riportavano la finalità con l'apostrofo al posto dell'accento, difetto introdotto dall'agente e segnalato prima di qualunque rimedio; valgono le consegne con timestamp 20261012T0854, T0855 e T0856. L'utente ha poi eseguito il commit `e7efaab` e ordinato la rimozione delle tre cartelle superate, eseguita dopo il riscontro delle tre valide contro manifesto e copie locali: sulla condivisione restano quattro cartelle, una per interessato e anno, e quella di Vergani 2025 porta il nome senza cognome perché prodotta prima di questa convenzione. P-004, P-006 e P-007 chiuse; P-001 e P-002 valgono ora anche per il nuovo perimetro e per tre documenti ancora da firmare.
 
 Nella sessione precedente l'utente aveva chiesto il versionamento e la chiusura. Controlli finali confermati, messaggio di commit pronto e punto di ripresa salvato. Rilevato il profilo Git globale esistente per proporre i comandi manuali di configurazione locale; nessun valore identitario riportato nei file versionabili. Non esiste uno script di chiusura istanziato nel progetto: la funzione di shell presente non può sostituirlo. Ultimo passaggio: configurazione locale e commit nel terminale dell'utente. Non indicare un commit come eseguito prima del riscontro.

@@ -8,7 +8,7 @@ covers-paths:
   - 'Export-TeamsEvidence.ps1'
   - 'requirements-evidence.txt'
   - 'tools/**'
-last-verified-commit: 937b2416e3bc9d5b06a91d2d62aa4a0451aa7252
+last-verified-commit: e7efaab
 ---
 
 # Verifiche
