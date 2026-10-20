@@ -29,3 +29,7 @@ Per verificare il drift delle schede usare `sync-context`; per riprendere il lav
 ## Chiusura
 
 Eseguire le verifiche pertinenti e aggiornare `_notes/RESUME-PROMPT.md`; registrare l'impronta con `python tools/verifica-ripresa.py --registra`. Preparare `_notes/COMMIT-MSG.txt`, una riga di massimo 72 caratteri. Le operazioni git e i rilasci sono sempre manuali. L'identità git e gli account della macchina mantengono la configurazione esistente.
+
+Norme caricate su richiesta, una riga per situazione con le parole con cui si presenta, così che il caricamento non dipenda dal ricordare che la norma esista.
+
+- Va prodotto, modificato o convertito un artefatto visivo o documentale, cioè un documento, una presentazione, un PDF, un'immagine, un'animazione, un audio o un impaginato, oppure si sta per scrivere uno script o installare una libreria per farlo: skill `craft-apps`, che prima verifica in locale le applicazioni Craft installate e le usa senza rete né token.
