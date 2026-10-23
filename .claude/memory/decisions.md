@@ -1,5 +1,9 @@
 # Decisioni
 
+## ADR-010 - Il perimetro resta il 2021 e le due chat dirette
+
+Data: 2026-10-23. Accertato che gli estratti conto sottoscritti non compaiono fra i 21 allegati del 2021 nelle chat Potalivo / Vergani e Martellini / Vergani, l'agente aveva elencato quattro vie per proseguire, cioè il 2022 dove cadrebbe l'estratto di dicembre, le chat di gruppo e i canali che l'esportatore rifiuta per costruzione, le chat di Vergani con altre persone e l'ipotesi del documento incollato come immagine. L'utente decide di restare al 2021 e alle due chat, e di non aprire nessuna di quelle vie. Resta quindi vero, e scritto, che l'assenza riguarda il perimetro esaminato e non dimostra che il documento non sia mai stato inviato altrove: la decisione chiude la ricerca, non la questione di fatto. Si eliminano gli inventari superati, cioè quelli prodotti con il filtro sui soli sei mesi, perché sono dati derivati rigenerabili dal pacchetto consegnato e la loro presenza accanto a quelli dell'anno intero genera la stessa confusione che il 2026-10-12 aveva portato a rimuovere le cartelle superate.
+
 ## ADR-009 - Un messaggio senza nome del mittente si dichiara, non si ricostruisce
 
 Data: 2026-10-12. Una risposta Graph del 2024 riporta `displayName` nullo per un messaggio di un partecipante verificato, e la verifica del pacchetto si è fermata perché confrontava quel campo con la dicitura che l'esportatore scrive al suo posto. Si sceglie di non dedurre il nome dall'identificativo, che pure lo renderebbe determinabile: le viste continuano a dichiarare «(mittente non disponibile)» e il verbale riporta quanti messaggi si trovano in quella condizione. L'identificativo dell'autore resta confrontato con la fonte senza eccezioni, così la guardia continua a cadere se cambia davvero l'autore. La fixture sintetica riproduce il caso e misura la differenza fra la regola precedente e quella corretta.

@@ -13,9 +13,54 @@ param(
     [string]$ExecutionInstructionPath = '',
     [string]$OutputPath = '',
     [string]$DestinationRoot = '',
-    [string]$PythonCommand = 'python'
+    [string]$PythonCommand = 'python',
+    [switch]$ConservaCopiaLocale
 )
 $ErrorActionPreference = 'Stop'
+
+function Remove-EvidencePath {
+    <#
+    .SYNOPSIS
+        Sovrascrive, rinomina e cancella una cartella di materiale acquisito.
+    .DESCRIPTION
+        La sovrascrittura rende il contenuto irrecuperabile dai normali strumenti di
+        recupero su disco magnetico. Su unita' a stato solido non lo attesta: il wear
+        leveling scrive altrove e il TRIM libera i blocchi originali senza azzerarli,
+        quindi la copia vecchia puo' restare fuori dalla portata del filesystem ma
+        presente sul supporto. Questa funzione dichiara cio' che ha rimosso, non che
+        il dato sia distrutto a livello fisico.
+    #>
+    param([Parameter(Mandatory = $true)][string]$Path)
+    if (-not (Test-Path -LiteralPath $Path)) { return [pscustomobject]@{Files = 0; Bytes = 0L} }
+    $count = 0
+    $bytes = 0L
+    $rng = [Security.Cryptography.RNGCryptoServiceProvider]::new()
+    try {
+        foreach ($file in @(Get-ChildItem -LiteralPath $Path -File -Recurse -Force)) {
+            try { $file.Attributes = [IO.FileAttributes]::Normal } catch {}
+            $length = $file.Length
+            $stream = [IO.File]::Open($file.FullName, [IO.FileMode]::Open, [IO.FileAccess]::Write, [IO.FileShare]::None)
+            try {
+                $buffer = New-Object byte[] 65536
+                $written = 0L
+                while ($written -lt $length) {
+                    $rng.GetBytes($buffer)
+                    $chunk = [int][Math]::Min([int64]$buffer.Length, $length - $written)
+                    $stream.Write($buffer, 0, $chunk)
+                    $written += $chunk
+                }
+                $stream.Flush($true)
+            } finally { $stream.Dispose() }
+            $renamed = Join-Path $file.DirectoryName ([guid]::NewGuid().ToString('N'))
+            Move-Item -LiteralPath $file.FullName -Destination $renamed -Force
+            Remove-Item -LiteralPath $renamed -Force
+            $count++
+            $bytes += $length
+        }
+    } finally { $rng.Dispose() }
+    Remove-Item -LiteralPath $Path -Recurse -Force
+    return [pscustomobject]@{Files = $count; Bytes = $bytes}
+}
 $helper = Join-Path $PSScriptRoot 'tools\teams_evidence.py'
 & $PythonCommand $helper dependencies | Out-Host
 if ($LASTEXITCODE -ne 0) { throw 'Dipendenze mancanti: installare requirements-evidence.txt prima di acquisire dati.' }
@@ -101,11 +146,29 @@ try {
     if ($destination) { Write-Host "Consegna verificata: $destination" }
     $manifestHash = (Get-FileHash -LiteralPath (Join-Path $OutputPath 'SHA256.csv') -Algorithm SHA256).Hash
     Write-Host "Manifesto SHA-256: $manifestHash"
-    return [pscustomobject]@{OutputPath=$OutputPath;Destination=$destination;WorkPath=$work;MessageCount=$result.MessageCount;ReportPath=(Join-Path $OutputPath 'Verbale_acquisizione.pdf');ManifestSha256=$manifestHash}
+    # Il materiale acquisito vive soltanto nella cartella indicata dal richiedente. La copia locale e la
+    # cartella di lavoro si rimuovono qui, cioe' dopo che la consegna e' stata verificata file per file,
+    # e mai quando la consegna non e' stata chiesta: senza destinazione la copia locale e' l'unico esito.
+    $localRemoved = $null
+    if ($destination -and -not $ConservaCopiaLocale) {
+        $removedPackage = Remove-EvidencePath -Path $OutputPath
+        $removedWork = Remove-EvidencePath -Path $work
+        $localRemoved = [pscustomobject]@{Files=($removedPackage.Files + $removedWork.Files);Bytes=($removedPackage.Bytes + $removedWork.Bytes)}
+        Write-Host ("Copia locale rimossa: " + $localRemoved.Files + " file, " + $localRemoved.Bytes + " byte, sovrascritti prima della cancellazione.")
+        Write-Host "Su unita' a stato solido la sovrascrittura non attesta l'irrecuperabilita' fisica del dato."
+        $OutputPath = ''
+        $work = ''
+    } elseif (-not $destination) {
+        Write-Host "Nessuna destinazione indicata: la copia locale resta, perche' e' l'unico esito dell'acquisizione."
+    }
+    $reportRoot = if ($destination) { $destination } else { $OutputPath }
+    return [pscustomobject]@{OutputPath=$OutputPath;Destination=$destination;WorkPath=$work;MessageCount=$result.MessageCount;ReportPath=(Join-Path $reportRoot 'Verbale_acquisizione.pdf');ManifestSha256=$manifestHash;LocalCopyRemoved=$localRemoved}
 } catch {
     $run.Status = 'Failed'
     $run.Error = $_.Exception.Message
     $run.FailedAtUtc = [datetimeoffset]::UtcNow.ToString('o')
-    $run | ConvertTo-Json | Set-Content -LiteralPath $runPath -Encoding UTF8
+    # Se il guasto arriva durante la rimozione della copia locale, il registro non ha piu' dove scriversi:
+    # l'errore originale non deve sparire dietro a un secondo errore sul file di esito.
+    try { $run | ConvertTo-Json | Set-Content -LiteralPath $runPath -Encoding UTF8 } catch { Write-Warning "Esito non registrabile su disco: $($_.Exception.Message)" }
     throw
 }
